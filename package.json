@@ -1,0 +1,24 @@
+{
+  "name": "clawberto-hypersnap-client",
+  "version": "0.1.0",
+  "description": "OpenClaw client — authenticate, post, and view Farcaster content via HyperSnap",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "bot": "tsx src/skills/telegram/bot.ts"
+  },
+  "dependencies": {
+    "@farcaster/hub-nodejs": "^0.12.0",
+    "@noble/hashes": "^1.4.0",
+    "@scure/bip39": "^1.3.0",
+    "dotenv": "^16.4.0",
+    "grammy": "^1.31.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
