@@ -1,6 +1,6 @@
 # Clawberto HyperSnap Client
 
-OpenClaw client connected to HyperSnap — authenticate, post, and view Farcaster content specifically via a local HyperSnap node.
+OpenClaw client for Farcaster — authenticate, post, and view content via any remote Snapchain-compatible node (HyperSnap, community nodes, or managed services). No local node required.
 
 ## Skills
 
@@ -19,27 +19,38 @@ OpenClaw client connected to HyperSnap — authenticate, post, and view Farcaste
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with a **remote** node address and your Farcaster identity:
 
 ```env
-# HyperSnap node (must be running locally or remotely)
-HYPERSNAP_GRPC=localhost:3383
-HYPERSNAP_HTTP=http://localhost:3381
+# ── Remote node ────────────────────────────────────────────────────────────────
+# Community or self-hosted node (plain gRPC)
+HYPERSNAP_GRPC=snapchain.example.com:3383
+HYPERSNAP_HTTP=http://snapchain.example.com:3381
+HYPERSNAP_SSL=false
 
-# Your Farcaster ID
-FARCASTER_FID=12345
+# Managed provider (TLS + API key) — e.g. Neynar
+# HYPERSNAP_GRPC=hub.neynar.com:3383
+# HYPERSNAP_HTTP=https://hub.neynar.com:3381
+# HYPERSNAP_SSL=true
+# HYPERSNAP_API_KEY=your-api-key
 
-# Signing key — choose ONE:
+# ── Identity ───────────────────────────────────────────────────────────────────
+FARCASTER_FID=2771439
 SIGNER_PRIVATE_KEY=<64-char hex Ed25519 private key>
-# OR
-SIGNER_MNEMONIC=<12 or 24 word BIP-39 mnemonic>
+# or: SIGNER_MNEMONIC=<12 or 24 words>
 
-# Telegram bot (for the bot skill)
+# ── Telegram (optional) ────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN=<token from @BotFather>
-TELEGRAM_ALLOWED_USERS=123456789,987654321   # leave empty to allow everyone
+TELEGRAM_ALLOWED_USERS=123456789
 ```
 
-> **Note:** The signing key must be an Ed25519 key already registered on-chain via the Farcaster Key Registry on Base. The public key shown at startup is what you register.
+### Finding a node
+
+| Option | Details |
+|---|---|
+| **Neynar** | Managed hub at [neynar.com](https://neynar.com) — easiest, no self-hosting |
+| **Community nodes** | Any public Snapchain node running ports 3381/3383 |
+| **Self-hosted** | Run your own: [snapchain bootstrap](https://github.com/farcasterxyz/snapchain#running-a-node) |
 
 ### 2. Install
 
@@ -57,20 +68,51 @@ npm run dev
 npm run bot
 ```
 
-## Telegram Bot Commands
+## Authentication
+
+### Signing key
+
+Your **signer** is an Ed25519 key that must be registered on-chain via the Farcaster Key Registry on Base. The public key is logged at startup — use that to register it.
+
+**Option A — Raw private key**
+```env
+SIGNER_PRIVATE_KEY=abcdef0123456789...   # 64 hex chars, no 0x prefix
+```
+
+**Option B — BIP-39 mnemonic (SLIP-0010 derivation)**
+```env
+SIGNER_MNEMONIC=word1 word2 word3 ...   # 12 or 24 words
+```
+
+### Node auth
+
+For nodes that require authentication:
+
+```env
+# Basic Auth (username:password)
+HYPERSNAP_USERNAME=youruser
+HYPERSNAP_PASSWORD=yourpass
+
+# API key (e.g. Neynar)
+HYPERSNAP_API_KEY=your-api-key
+```
+
+## Telegram Bot
+
+### Commands
 
 | Command | Description |
 |---|---|
 | `/start` | Show help |
-| `/post <text>` | Publish a cast via HyperSnap |
+| `/post <text>` | Publish a cast |
 | `/feed [fid]` | Show recent casts with interaction buttons |
 | `/profile [fid]` | Show a Farcaster profile |
-| `/node` | Show HyperSnap node status |
+| `/node` | Show connected node status |
 | `/cancel` | Cancel a pending reply or quote |
 
 ### Inline Buttons
 
-Every cast shown in the feed has buttons:
+Every cast in the feed has:
 
 ```
 👍 Like    🔁 Recast
@@ -78,11 +120,11 @@ Every cast shown in the feed has buttons:
       🧵 Thread
 ```
 
-- **Like / Unlike** — toggle a like reaction on the cast
-- **Recast / Undo Recast** — toggle a recast
-- **Reply** — bot prompts you for reply text, then submits it as a child cast
-- **Quote** — bot prompts you for text, then posts it as a new cast embedding the original
-- **Thread** — fetches and displays replies to the cast
+- **Like / Unlike** — toggle a like reaction
+- **Recast / Undo** — toggle a recast
+- **Reply** — bot prompts for reply text, then posts it as a child cast
+- **Quote** — bot prompts for text, then posts it embedding the original
+- **Thread** — fetches and displays replies inline
 
 ## Programmatic Use
 
@@ -109,23 +151,3 @@ await quoteCast(auth, "Look at this:", targetFid, "0xabc123...");
 // View feed
 const casts = await getFeed(auth.client, auth.fid, 10);
 ```
-
-## Authentication
-
-### Option A — Raw private key
-
-```env
-SIGNER_PRIVATE_KEY=abcdef0123456789...  # 64 hex chars, no 0x prefix
-```
-
-### Option B — BIP-39 mnemonic (SLIP-0010 derivation)
-
-```env
-SIGNER_MNEMONIC=word1 word2 word3 ...   # 12 or 24 words
-```
-
-The key is derived using SLIP-0010 Ed25519 master key derivation. The resulting public key is logged at startup — register it on-chain before posting.
-
-## HyperSnap vs Snapchain
-
-Messages are submitted exclusively to the locally configured HyperSnap node (`HYPERSNAP_GRPC`). HyperSnap is compatible with the Farcaster protocol, so messages propagate to the wider Farcaster network through the node's gossip layer.

@@ -35,17 +35,19 @@ export async function loadAuth(): Promise<AuthContext> {
 
   const client = new HyperSnapClient();
 
-  // Sanity-check: verify we can reach the HyperSnap node
+  // Sanity-check: verify we can reach the remote node
   try {
     const info = await client.getNodeInfo();
     console.log(
-      `[auth] Connected to HyperSnap — ${info.numShards} shard(s), ` +
+      `[auth] Connected to ${client.config.httpAddr} — ` +
+        `${info.numShards} shard(s), ` +
         `${info.dbStats.numMessages.toLocaleString()} messages`
     );
   } catch (err) {
     throw new Error(
-      `Cannot reach HyperSnap node at ${client.config.httpAddr}. ` +
-        `Make sure the node is running. (${(err as Error).message})`
+      `Cannot reach node at ${client.config.httpAddr}.\n` +
+        `Check HYPERSNAP_GRPC and HYPERSNAP_HTTP in your .env.\n` +
+        `(${(err as Error).message})`
     );
   }
 
