@@ -123,7 +123,7 @@ export class HyperSnapClient {
   // ── Write ─────────────────────────────────────────────────────────────────
 
   /** Submit any signed Farcaster Message to the remote node. */
-  async submitMessage(message: Message) {
+  async submitMessage(message: Message): Promise<Message> {
     const result = await this.rpc.submitMessage(message, this.authMetadata());
     if (result.isErr()) throw result.error;
     return result.value;
@@ -131,7 +131,7 @@ export class HyperSnapClient {
 
   // ── Casts ─────────────────────────────────────────────────────────────────
 
-  async getCastsByFid(fid: number, pageSize = 20) {
+  async getCastsByFid(fid: number, pageSize = 20): Promise<Message[]> {
     const result = await this.rpc.getCastsByFid(
       { fid, pageSize },
       this.authMetadata()
@@ -140,13 +140,13 @@ export class HyperSnapClient {
     return result.value.messages;
   }
 
-  async getCast(fid: number, hash: Uint8Array) {
+  async getCast(fid: number, hash: Uint8Array): Promise<Message> {
     const result = await this.rpc.getCast({ fid, hash }, this.authMetadata());
     if (result.isErr()) throw result.error;
     return result.value;
   }
 
-  async getCastsByParent(parentFid: number, parentHash: Uint8Array) {
+  async getCastsByParent(parentFid: number, parentHash: Uint8Array): Promise<Message[]> {
     const result = await this.rpc.getCastsByParent(
       { parentCastId: { fid: parentFid, hash: parentHash } },
       this.authMetadata()
@@ -157,7 +157,7 @@ export class HyperSnapClient {
 
   // ── Reactions ─────────────────────────────────────────────────────────────
 
-  async getReactionsByFid(fid: number, pageSize = 20) {
+  async getReactionsByFid(fid: number, pageSize = 20): Promise<Message[]> {
     const result = await this.rpc.getReactionsByFid(
       { fid, pageSize },
       this.authMetadata()
@@ -166,7 +166,7 @@ export class HyperSnapClient {
     return result.value.messages;
   }
 
-  async getReactionsByCast(targetFid: number, targetHash: Uint8Array) {
+  async getReactionsByCast(targetFid: number, targetHash: Uint8Array): Promise<Message[]> {
     const result = await this.rpc.getReactionsByCast(
       { targetCastId: { fid: targetFid, hash: targetHash } },
       this.authMetadata()
@@ -177,7 +177,7 @@ export class HyperSnapClient {
 
   // ── Profile ────────────────────────────────────────────────────────────────
 
-  async getUserDataByFid(fid: number) {
+  async getUserDataByFid(fid: number): Promise<Message[]> {
     const result = await this.rpc.getUserDataByFid(
       { fid },
       this.authMetadata()
@@ -188,7 +188,7 @@ export class HyperSnapClient {
 
   // ── Node info ─────────────────────────────────────────────────────────────
 
-  async getNodeInfo() {
+  async getNodeInfo(): Promise<NodeInfo> {
     const res = await fetch(
       `${this.config.httpAddr}/v1/info`,
       { headers: this.httpHeaders() }

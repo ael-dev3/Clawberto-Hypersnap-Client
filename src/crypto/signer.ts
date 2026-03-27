@@ -4,7 +4,7 @@
  * Supports raw private key (hex) and BIP-39 mnemonic via SLIP-0010.
  */
 
-import { Ed25519Signer } from "@farcaster/hub-nodejs";
+import { NobleEd25519Signer, type Ed25519Signer } from "@farcaster/hub-nodejs";
 import { hmac } from "@noble/hashes/hmac";
 import { sha512 } from "@noble/hashes/sha2";
 import { mnemonicToSeedSync } from "@scure/bip39";
@@ -21,7 +21,7 @@ export function signerFromPrivateKey(hexKey: string): Ed25519Signer {
     );
   }
   const bytes = hexToBytes(clean);
-  return new Ed25519Signer(bytes);
+  return new NobleEd25519Signer(bytes);
 }
 
 /**
@@ -33,7 +33,7 @@ export function signerFromMnemonic(mnemonic: string): Ed25519Signer {
   // SLIP-0010: I = HMAC-SHA512(Key="ed25519 seed", Data=seed)
   const I = hmac(sha512, Buffer.from("ed25519 seed"), seed);
   const privateKey = I.slice(0, 32);
-  return new Ed25519Signer(privateKey);
+  return new NobleEd25519Signer(privateKey);
 }
 
 /**

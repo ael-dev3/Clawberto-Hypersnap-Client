@@ -9,7 +9,7 @@ import {
   makeCastRemove,
   makeReactionAdd,
   makeReactionRemove,
-  FarcasterNetwork,
+  CastType,
   ReactionType,
   Message,
 } from "@farcaster/hub-nodejs";
@@ -45,10 +45,12 @@ export async function postCast(
   opts: CastOptions
 ): Promise<Message> {
   const body: Parameters<typeof makeCastAdd>[0] = {
+    embedsDeprecated: [],
     text: opts.text,
     embeds: opts.embeds?.map((url) => ({ url })) ?? [],
     mentions: opts.mentions ?? [],
     mentionsPositions: opts.mentionsPositions ?? [],
+    type: CastType.CAST,
   };
 
   if (opts.parentCastId) {
@@ -177,10 +179,12 @@ export async function quoteCast(
 ): Promise<Message> {
   const result = await makeCastAdd(
     {
+      embedsDeprecated: [],
       text,
       embeds: [{ castId: { fid: targetFid, hash: hexToBytes(targetHashHex) } }],
       mentions: [],
       mentionsPositions: [],
+      type: CastType.CAST,
     },
     dataOptions(ctx),
     ctx.signer

@@ -24,8 +24,7 @@ import {
 import {
   parseCastCallback,
   castKeyboard,
-  castKeyboardLiked,
-  castKeyboardRecast,
+  inferCastKeyboardState,
 } from "./keyboards";
 
 // ── Session ────────────────────────────────────────────────────────────────────
@@ -197,6 +196,9 @@ export function registerHandlers(bot: Bot<BotContext>, auth: AuthContext) {
     }
 
     const { action, fid, hashHex } = parsed;
+    const currentKeyboardState = inferCastKeyboardState(
+      ctx.callbackQuery.message?.reply_markup
+    );
 
     try {
       switch (action) {
@@ -204,7 +206,10 @@ export function registerHandlers(bot: Bot<BotContext>, auth: AuthContext) {
           await likeCast(auth, fid, hashHex);
           await ctx.answerCallbackQuery("❤️ Liked!");
           await ctx.editMessageReplyMarkup({
-            reply_markup: castKeyboardLiked(fid, hashHex),
+            reply_markup: castKeyboard(fid, hashHex, {
+              ...currentKeyboardState,
+              liked: true,
+            }),
           });
           break;
 
@@ -212,7 +217,10 @@ export function registerHandlers(bot: Bot<BotContext>, auth: AuthContext) {
           await unlikeCast(auth, fid, hashHex);
           await ctx.answerCallbackQuery("💔 Unliked.");
           await ctx.editMessageReplyMarkup({
-            reply_markup: castKeyboard(fid, hashHex),
+            reply_markup: castKeyboard(fid, hashHex, {
+              ...currentKeyboardState,
+              liked: false,
+            }),
           });
           break;
 
@@ -220,7 +228,10 @@ export function registerHandlers(bot: Bot<BotContext>, auth: AuthContext) {
           await recast(auth, fid, hashHex);
           await ctx.answerCallbackQuery("🔁 Recasted!");
           await ctx.editMessageReplyMarkup({
-            reply_markup: castKeyboardRecast(fid, hashHex),
+            reply_markup: castKeyboard(fid, hashHex, {
+              ...currentKeyboardState,
+              recasted: true,
+            }),
           });
           break;
 
@@ -228,7 +239,10 @@ export function registerHandlers(bot: Bot<BotContext>, auth: AuthContext) {
           await unrecast(auth, fid, hashHex);
           await ctx.answerCallbackQuery("↩️ Recast removed.");
           await ctx.editMessageReplyMarkup({
-            reply_markup: castKeyboard(fid, hashHex),
+            reply_markup: castKeyboard(fid, hashHex, {
+              ...currentKeyboardState,
+              recasted: false,
+            }),
           });
           break;
 
