@@ -16,17 +16,26 @@ export interface AuthContext {
   client: HyperSnapClient;
 }
 
+function parseFid(value?: string): number {
+  const fidStr = value?.trim();
+  if (!fidStr) {
+    throw new Error("FARCASTER_FID is not set in .env");
+  }
+
+  const fid = Number(fidStr);
+  if (!Number.isSafeInteger(fid) || fid <= 0) {
+    throw new Error("FARCASTER_FID must be a positive integer in .env");
+  }
+
+  return fid;
+}
+
 /**
  * Load auth from environment variables and verify the HyperSnap node is reachable.
  * Throws if configuration is missing or the node is unreachable.
  */
 export async function loadAuth(): Promise<AuthContext> {
-  const fidStr = process.env.FARCASTER_FID?.trim();
-  if (!fidStr || isNaN(Number(fidStr))) {
-    throw new Error("FARCASTER_FID is not set or invalid in .env");
-  }
-  const fid = Number(fidStr);
-
+  const fid = parseFid(process.env.FARCASTER_FID);
   const signer = signerFromEnv();
 
   const pubKeyResult = await signer.getSignerKey();

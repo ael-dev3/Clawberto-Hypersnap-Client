@@ -134,7 +134,7 @@ export async function getReplies(
   const { hexToBytes } = await import("../../crypto/signer");
   const messages = await client.getCastsByParent(
     parentFid,
-    hexToBytes(parentHashHex)
+    hexToBytes(parentHashHex, "Parent cast hash")
   );
   return messages
     .map(msgToCastView)
@@ -178,7 +178,7 @@ export async function getLikesForCast(
   const { hexToBytes } = await import("../../crypto/signer");
   const reactions = await client.getReactionsByCast(
     targetFid,
-    hexToBytes(targetHashHex)
+    hexToBytes(targetHashHex, "Target cast hash")
   );
   return reactions.filter(
     (m) => m.data?.reactionBody?.type === ReactionType.LIKE

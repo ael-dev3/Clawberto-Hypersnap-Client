@@ -56,7 +56,7 @@ export async function postCast(
   if (opts.parentCastId) {
     body.parentCastId = {
       fid: opts.parentCastId.fid,
-      hash: hexToBytes(opts.parentCastId.hash),
+      hash: hexToBytes(opts.parentCastId.hash, "Parent cast hash"),
     };
   } else if (opts.parentUrl) {
     body.parentUrl = opts.parentUrl;
@@ -74,7 +74,7 @@ export async function removeCast(
   castHashHex: string
 ): Promise<Message> {
   const result = await makeCastRemove(
-    { targetHash: hexToBytes(castHashHex) },
+    { targetHash: hexToBytes(castHashHex, "Cast hash") },
     dataOptions(ctx),
     ctx.signer
   );
@@ -92,7 +92,7 @@ export async function likeCast(
   const result = await makeReactionAdd(
     {
       type: ReactionType.LIKE,
-      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex) },
+      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex, "Target cast hash") },
     },
     dataOptions(ctx),
     ctx.signer
@@ -109,7 +109,7 @@ export async function unlikeCast(
   const result = await makeReactionRemove(
     {
       type: ReactionType.LIKE,
-      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex) },
+      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex, "Target cast hash") },
     },
     dataOptions(ctx),
     ctx.signer
@@ -126,7 +126,7 @@ export async function recast(
   const result = await makeReactionAdd(
     {
       type: ReactionType.RECAST,
-      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex) },
+      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex, "Target cast hash") },
     },
     dataOptions(ctx),
     ctx.signer
@@ -143,7 +143,7 @@ export async function unrecast(
   const result = await makeReactionRemove(
     {
       type: ReactionType.RECAST,
-      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex) },
+      targetCastId: { fid: targetFid, hash: hexToBytes(targetHashHex, "Target cast hash") },
     },
     dataOptions(ctx),
     ctx.signer
@@ -181,7 +181,7 @@ export async function quoteCast(
     {
       embedsDeprecated: [],
       text,
-      embeds: [{ castId: { fid: targetFid, hash: hexToBytes(targetHashHex) } }],
+      embeds: [{ castId: { fid: targetFid, hash: hexToBytes(targetHashHex, "Quoted cast hash") } }],
       mentions: [],
       mentionsPositions: [],
       type: CastType.CAST,

@@ -33,11 +33,84 @@ export interface HyperSnapConfig {
   apiKey?: string;
 }
 
-export function defaultConfig(): HyperSnapConfig {
-  const grpcAddr = process.env.HYPERSNAP_GRPC?.trim();
-  const httpAddr = process.env.HYPERSNAP_HTTP?.trim();
+const NETWORK_MAP: Record<string, FarcasterNetwork> = {
+  mainnet: FarcasterNetwork.MAINNET,
+  testnet: FarcasterNetwork.TESTNET,
+  devnet: FarcasterNetwork.DEVNET,
+};
 
+function parseGrpcAddress(value: string): string {
+  const grpcAddr = value.trim();
   if (!grpcAddr) {
+    throw new Error("HYPERSNAP_GRPC is set but empty.");
+  }
+  if (grpcAddr.includes("://")) {
+    throw new Error("HYPERSNAP_GRPC must be host:port without http:// or https://.");
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(`http://${grpcAddr}`);
+  } catch {
+    throw new Error("HYPERSNAP_GRPC must be a valid host:port pair.");
+  }
+
+  if (!parsed.hostname || !parsed.port || parsed.pathname !== "/") {
+    throw new Error("HYPERSNAP_GRPC must be a valid host:port pair.");
+  }
+  return grpcAddr;
+}
+
+function parseHttpAddress(value: string): string {
+  const httpAddr = value.trim().replace(/\/+$/, "");
+  if (!httpAddr) {
+    throw new Error("HYPERSNAP_HTTP is set but empty.");
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(httpAddr);
+  } catch {
+    throw new Error("HYPERSNAP_HTTP must be a valid http:// or https:// URL.");
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("HYPERSNAP_HTTP must use http:// or https://.");
+  }
+
+  return httpAddr;
+}
+
+function parseNetwork(value?: string): FarcasterNetwork {
+  const networkStr = (value?.trim() || "mainnet").toLowerCase();
+  const network = NETWORK_MAP[networkStr];
+  if (network == null) {
+    throw new Error(
+      "FARCASTER_NETWORK must be one of: mainnet, testnet, devnet."
+    );
+  }
+  return network;
+}
+
+function parseBooleanEnv(name: string, value?: string): boolean {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  if (normalized === "true") {
+    return true;
+  }
+  if (normalized === "false") {
+    return false;
+  }
+  throw new Error(`${name} must be set to true or false when provided.`);
+}
+
+export function defaultConfig(): HyperSnapConfig {
+  const grpcEnv = process.env.HYPERSNAP_GRPC?.trim();
+  const httpEnv = process.env.HYPERSNAP_HTTP?.trim();
+
+  if (!grpcEnv) {
     throw new Error(
       "HYPERSNAP_GRPC is not set.\n" +
         "Set it to a remote Snapchain node, e.g.:\n" +
@@ -45,7 +118,7 @@ export function defaultConfig(): HyperSnapConfig {
         "Managed options: Neynar (https://neynar.com) provides hosted hub access."
     );
   }
-  if (!httpAddr) {
+  if (!httpEnv) {
     throw new Error(
       "HYPERSNAP_HTTP is not set.\n" +
         "Set it to the HTTP address of the same node, e.g.:\n" +
@@ -53,26 +126,26 @@ export function defaultConfig(): HyperSnapConfig {
     );
   }
 
-  const networkStr = (process.env.FARCASTER_NETWORK ?? "mainnet").toLowerCase();
-  const networkMap: Record<string, FarcasterNetwork> = {
-    mainnet: FarcasterNetwork.MAINNET,
-    testnet: FarcasterNetwork.TESTNET,
-    devnet: FarcasterNetwork.DEVNET,
-  };
-
-  const ssl = process.env.HYPERSNAP_SSL?.trim().toLowerCase() === "true";
+  const grpcAddr = parseGrpcAddress(grpcEnv);
+  const httpAddr = parseHttpAddress(httpEnv);
+  const network = parseNetwork(process.env.FARCASTER_NETWORK);
+  const ssl = parseBooleanEnv("HYPERSNAP_SSL", process.env.HYPERSNAP_SSL);
 
   const username = process.env.HYPERSNAP_USERNAME?.trim();
   const password = process.env.HYPERSNAP_PASSWORD?.trim();
-  const auth =
-    username && password ? { username, password } : undefined;
+  if ((username && !password) || (!username && password)) {
+    throw new Error(
+      "Set both HYPERSNAP_USERNAME and HYPERSNAP_PASSWORD for Basic Auth."
+    );
+  }
+  const auth = username && password ? { username, password } : undefined;
 
   const apiKey = process.env.HYPERSNAP_API_KEY?.trim() || undefined;
 
   return {
     grpcAddr,
     httpAddr,
-    network: networkMap[networkStr] ?? FarcasterNetwork.MAINNET,
+    network,
     ssl,
     auth,
     apiKey,
