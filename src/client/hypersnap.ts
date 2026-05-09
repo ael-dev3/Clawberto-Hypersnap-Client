@@ -55,7 +55,15 @@ function parseGrpcAddress(value: string): string {
     throw new Error("HYPERSNAP_GRPC must be a valid host:port pair.");
   }
 
-  if (!parsed.hostname || !parsed.port || parsed.pathname !== "/") {
+  if (
+    !parsed.hostname ||
+    !parsed.port ||
+    parsed.pathname !== "/" ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash
+  ) {
     throw new Error("HYPERSNAP_GRPC must be a valid host:port pair.");
   }
   return grpcAddr;

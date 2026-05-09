@@ -84,6 +84,26 @@ test("defaultConfig rejects malformed gRPC addresses", async () => {
       assert.throws(() => defaultConfig(), /HYPERSNAP_GRPC must be host:port/);
     }
   );
+
+  await withEnv(
+    {
+      ...BASE_CONFIG_ENV,
+      HYPERSNAP_GRPC: "user@hub.neynar.com:3383",
+    },
+    () => {
+      assert.throws(() => defaultConfig(), /HYPERSNAP_GRPC must be a valid host:port pair/);
+    }
+  );
+
+  await withEnv(
+    {
+      ...BASE_CONFIG_ENV,
+      HYPERSNAP_GRPC: "hub.neynar.com:3383?debug=1",
+    },
+    () => {
+      assert.throws(() => defaultConfig(), /HYPERSNAP_GRPC must be a valid host:port pair/);
+    }
+  );
 });
 
 test("loadAuth rejects non-integer FIDs before attempting network access", async () => {
