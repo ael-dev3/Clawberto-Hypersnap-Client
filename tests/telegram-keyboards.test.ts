@@ -52,7 +52,9 @@ test("parseCastCallback rejects malformed callback data", () => {
   assert.equal(parseCastCallback("bogus"), null);
   assert.equal(parseCastCallback(`unknown:${FID}:${SHORT_HASH}`), null);
   assert.equal(parseCastCallback(`like:not-a-number:${SHORT_HASH}`), null);
+  assert.equal(parseCastCallback(`like:${FID}abc:${SHORT_HASH}`), null);
   assert.equal(parseCastCallback(`like:0:${SHORT_HASH}`), null);
+  assert.equal(parseCastCallback(`like:01:${SHORT_HASH}`), null);
   assert.equal(parseCastCallback(`like:${FID}:short`), null);
 });
 

@@ -31,6 +31,7 @@ export interface CastKeyboardState {
 
 type ReplyMarkupLike = Pick<InlineKeyboardMarkup, "inline_keyboard">;
 
+const CALLBACK_FID_RE = /^[1-9][0-9]*$/;
 const CALLBACK_HASH_RE = /^[0-9a-f]{40}$/i;
 const CAST_ACTIONS = new Set<CastAction>([
   "like",
@@ -66,6 +67,7 @@ export function parseCastCallback(
   if (parts.length !== 3) return null;
 
   const [action, fidStr, shortHash] = parts;
+  if (!CALLBACK_FID_RE.test(fidStr)) return null;
   const fid = Number.parseInt(fidStr, 10);
   if (!CAST_ACTIONS.has(action as CastAction)) return null;
   if (!Number.isSafeInteger(fid) || fid <= 0) return null;
