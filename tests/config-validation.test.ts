@@ -106,6 +106,28 @@ test("defaultConfig rejects malformed gRPC addresses", async () => {
   );
 });
 
+test("defaultConfig rejects HTTP URLs with embedded credentials or query state", async () => {
+  await withEnv(
+    {
+      ...BASE_CONFIG_ENV,
+      HYPERSNAP_HTTP: "https://alice:secret@hub.neynar.com:3381",
+    },
+    () => {
+      assert.throws(() => defaultConfig(), /HYPERSNAP_HTTP must not include credentials/);
+    }
+  );
+
+  await withEnv(
+    {
+      ...BASE_CONFIG_ENV,
+      HYPERSNAP_HTTP: "https://hub.neynar.com:3381?debug=1",
+    },
+    () => {
+      assert.throws(() => defaultConfig(), /HYPERSNAP_HTTP must not include credentials/);
+    }
+  );
+});
+
 test("loadAuth rejects non-integer FIDs before attempting network access", async () => {
   await withEnv(
     {

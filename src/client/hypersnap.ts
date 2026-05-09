@@ -85,6 +85,11 @@ function parseHttpAddress(value: string): string {
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     throw new Error("HYPERSNAP_HTTP must use http:// or https://.");
   }
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    throw new Error(
+      "HYPERSNAP_HTTP must not include credentials, query strings, or fragments."
+    );
+  }
 
   return httpAddr;
 }
