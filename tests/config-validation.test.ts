@@ -50,6 +50,28 @@ test("defaultConfig normalizes valid config values", async () => {
   });
 });
 
+test("defaultConfig accepts common boolean env aliases", async () => {
+  await withEnv(
+    {
+      ...BASE_CONFIG_ENV,
+      HYPERSNAP_SSL: "yes",
+    },
+    () => {
+      assert.equal(defaultConfig().ssl, true);
+    }
+  );
+
+  await withEnv(
+    {
+      ...BASE_CONFIG_ENV,
+      HYPERSNAP_SSL: "0",
+    },
+    () => {
+      assert.equal(defaultConfig().ssl, false);
+    }
+  );
+});
+
 test("defaultConfig rejects malformed network names", async () => {
   await withEnv(
     {

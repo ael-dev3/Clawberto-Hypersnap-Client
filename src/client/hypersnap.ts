@@ -110,13 +110,13 @@ function parseBooleanEnv(name: string, value?: string): boolean {
   if (!normalized) {
     return false;
   }
-  if (normalized === "true") {
+  if (["true", "1", "yes"].includes(normalized)) {
     return true;
   }
-  if (normalized === "false") {
+  if (["false", "0", "no"].includes(normalized)) {
     return false;
   }
-  throw new Error(`${name} must be set to true or false when provided.`);
+  throw new Error(`${name} must be set to true/false, 1/0, or yes/no when provided.`);
 }
 
 export function defaultConfig(): HyperSnapConfig {
