@@ -57,7 +57,7 @@ export function castCallbackData(
   if (!CALLBACK_HASH_RE.test(shortHash)) {
     throw new Error("Callback hash must be a 20-byte hex string.");
   }
-  return `${action}:${fid}:${shortHash}`;
+  return `${action}:${fid}:${shortHash.toLowerCase()}`;
 }
 
 export function parseCastCallback(

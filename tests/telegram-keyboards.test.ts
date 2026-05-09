@@ -73,6 +73,13 @@ test("castCallbackData rejects malformed builder inputs", () => {
   );
 });
 
+test("castCallbackData canonicalizes hash casing", () => {
+  assert.equal(
+    castCallbackData("like", FID, HASH_HEX.toUpperCase()),
+    `like:${FID}:${SHORT_HASH}`
+  );
+});
+
 test("parseCastCallback normalizes valid callback data", () => {
   assert.deepEqual(
     parseCastCallback(`recast:${FID}:${SHORT_HASH.toUpperCase()}`),
