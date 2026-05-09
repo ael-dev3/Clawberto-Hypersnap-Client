@@ -49,7 +49,13 @@ export function castCallbackData(
 ): string {
   // Telegram callback data has a 64-byte limit.
   // Farcaster message hashes are 20 bytes, so 40 hex chars fit cleanly.
-  const shortHash = hashHex.replace(/^0x/i, "").slice(0, 40);
+  if (!Number.isSafeInteger(fid) || fid <= 0) {
+    throw new Error("Callback FID must be a positive integer.");
+  }
+  const shortHash = hashHex.replace(/^0x/i, "");
+  if (!CALLBACK_HASH_RE.test(shortHash)) {
+    throw new Error("Callback hash must be a 20-byte hex string.");
+  }
   return `${action}:${fid}:${shortHash}`;
 }
 

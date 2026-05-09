@@ -56,6 +56,21 @@ test("parseCastCallback rejects malformed callback data", () => {
   assert.equal(parseCastCallback(`like:${FID}:short`), null);
 });
 
+test("castCallbackData rejects malformed builder inputs", () => {
+  assert.throws(
+    () => castCallbackData("like", 0, HASH_HEX),
+    /Callback FID must be a positive integer/
+  );
+  assert.throws(
+    () => castCallbackData("like", FID, "0xabc"),
+    /Callback hash must be a 20-byte hex string/
+  );
+  assert.throws(
+    () => castCallbackData("like", FID, `${SHORT_HASH}ff`),
+    /Callback hash must be a 20-byte hex string/
+  );
+});
+
 test("parseCastCallback normalizes valid callback data", () => {
   assert.deepEqual(
     parseCastCallback(`recast:${FID}:${SHORT_HASH.toUpperCase()}`),
